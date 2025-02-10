@@ -1,4 +1,7 @@
+use bincode::{self};
 use iced::widget::{button, column, text, text_input, Column};
+use serde::{Deserialize, Serialize};
+use std::fs;
 
 fn main() -> iced::Result {
     iced::application("Flow. Saga. Sunrise.", Flow::update, Flow::view)
@@ -8,6 +11,7 @@ fn main() -> iced::Result {
     // iced::run("Flow. Saga. Sunrise.", Flow::update, Flow::view)
 }
 
+#[derive(Serialize, Deserialize)]
 struct Task {
     name: String,
 }
@@ -24,14 +28,29 @@ enum Message {
     InputChanged(String),
 }
 
+//bincode
+
 impl Flow {
     fn update(&mut self, message: Message) {
+        let enc = fs::read("tasks.bin");
+        if enc.is_ok() {
+            let (decoded, _bytes_read): (Vec<Task>, usize) =
+                bincode::serde::decode_from_slice(&enc.unwrap(), bincode::config::standard())
+                    .unwrap();
+            self.tasks = decoded;
+        }
+
         match message {
             Message::CreateTask => {
                 self.tasks.push(Task {
                     name: self.input_take_name.clone(),
                 });
                 self.input_take_name.clear();
+
+                let result =
+                    bincode::serde::encode_to_vec(&self.tasks, bincode::config::standard())
+                        .unwrap();
+                fs::write("tasks.bin", &result).expect("failed tro write");
             }
             Message::InputChanged(cont) => {
                 self.input_take_name = cont;
