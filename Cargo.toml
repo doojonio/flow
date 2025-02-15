@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+async-std = "1.13.0"
 bincode = {version="2.0.0-rc.3", features=[ "serde" ]}
+chrono = "0.4.39"
 iced = "0.13.1"
 serde = "1.0.217"
